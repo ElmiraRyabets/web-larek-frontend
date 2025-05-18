@@ -1,68 +1,61 @@
-//model types
-export type PaymentMethod = 'byCash' | 'byCard';
-export type ProductCollection = IProduct[];
-export type ProductCategory = 'soft-skill' | 'another' | 'hard-skill' | 'button' | 'additional';
+export type Category = 'софт-скил' | 'другое' | 'хард-скил' | 'кнопка' | 'дополнительное';
+
 export interface IProduct {
-	id: string;
-    productCategory: ProductCategory;
-	description: string;
-	image: string;
-	name: string;
-	price: number | null;
-}
-export interface IBuyer {
-    id: string;
-    paymentMethod?: PaymentMethod;
-    address?: string;
-    email?: string;
-    phone?: string;
+    id: string,
+    description: string,
+    image: string,
+    title: string,
+    category: Category,
+    price: number | null
 }
 
-export interface IOrder {
-    id: string;
-    buyer: IBuyer;
-    summ: number
-    basket: ProductCollection
+export interface ISuccessOrder {
+    id: string,
+    total: number
 }
 
-export interface IAppState {
-    order: IOrder;
-    assortiment: ProductCollection;
+export type Payment = 'online' | 'offline'
+
+export interface IOrderInfo {
+    payment: Payment,
+    email: string,
+    phone: string,
+    address: string,
+    total: number,
+    items: string[]
 }
 
-//view types
-export interface IPage {
-	items: HTMLElement;
+export interface ISuccessActions {
+    onClick: () => void;
 }
 
-export interface ICardView  {
-	id: HTMLElement;
-    category: HTMLElement;
-	description: HTMLElement;
-	image: HTMLImageElement;
-	name: HTMLElement;
-    button: HTMLButtonElement;
-	price: HTMLElement;
+export interface IModalData {
+    content: HTMLElement;
+}
+
+export interface IFormState {
+    valid: boolean;
+    errors: string[];
 }
 
 export interface IBasketView {
-	items: HTMLElement;
-    summ: HTMLElement;
-    buttonDelete: HTMLButtonElement;
-    button: HTMLButtonElement;
-}
-
-
-export interface IOrderForm {
-	paymentMethod: string;
-	address: string;
+    items: HTMLElement[];
+    total: number;
+    selected: HTMLElement[];
 }
 
 export interface IContactsForm {
-	email: string;
-	phone: string;
+    email: string;
+    phone: string;
 }
 
-export interface ISuccessForm {
-	summ: number;
+export interface IOrderForm {
+    payment: Payment;
+    address: string;
+}
+
+export interface IPage {
+	counter: number;
+	catalog: HTMLElement[];
+    locked: boolean;
 }
