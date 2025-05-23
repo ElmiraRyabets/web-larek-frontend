@@ -66,12 +66,12 @@ yarn build
     export interface ISuccessOrder {
         id: string,
         total: number
-    }
+    }   
 
 **3. Тип Category**
     Этот тип характеризует категорию товара.
 
-    export type Category = 'софт-скил' | 'другое' | 'хард-скил' | 'кнопка' | 'дополнительное'
+    export type Category = 'софт-скил' | 'другое' | 'хард-скил' | 'кнопка' | 'дополнительное';
 
 **4. Тип Payment**
     Этот тип характеризует способ оплаты.
@@ -82,13 +82,13 @@ yarn build
 **5. Интерфейс IOrderInfo**
     Этот интерфейс описывает информацию о заказе.
 
-    export interface IOrderInfo {
-        payment: Payment,
-        email: string,
-        phone: string,
-        address: string,
-        total: number,
-        items: string[]
+    export interface IOrder {
+        payment?: Payment,
+        email?: string,
+        phone?: string,
+        address?: string,
+        total?: number,
+        items?: string[]
     }
 
 ## Базовый код 
@@ -115,7 +115,7 @@ yarn build
     Централизованный брокер событий.
 
     Свойства:
-        _events: Map<EventName, Set<Subscriber>>;
+        _events: Map<EventName, Set<Subscriber>>
 
     Методы:
         on<T extends object>(eventName: EventName, callback: (event: T) => void) // Установить обработчик на событие
@@ -132,6 +132,7 @@ yarn build
 
     Свойства:
         products: IProduct[] // Список товаров в корзине
+        isBasketActive: boolean //Флаг, указывающий на то, активна ли корзина в данный момент
 
     Конструктор:
         constructor(protected events: IEvents)
@@ -142,6 +143,7 @@ yarn build
         getBasketSize(): number // Получить размер корзины
         clearBasket() // Очистить корзину
         isProductInBasket(product: IProduct): boolean // Проверить, содержится ли продукт в корзине  
+        getTotal(): number //Посчитать сумму товаров в корзине
 
  **2. export class OrderInfo implements IOrderInfo**
     Модель информации о заказе, предназначенная для создания заказа на сервере.
@@ -151,8 +153,6 @@ yarn build
         email: string // Email клиента
         phone: string // Телефон клиента
         address: string // Адрес клиента
-        total: number // Oбщая сумма заказа
-        items: string[] // Товары в заказе
 
     Конструктор:
         constructor(protected events: IEvents)
@@ -162,8 +162,7 @@ yarn build
         setEmail(email: string) // Установить почту
         setPhone(phone: string) // Установить телефон
         setAddress(address: string) // Установить адрес
-        setTotal(total: number) // Установить сумму заказа
-        setItems(products: IProduct[]) Установить список заказанных товаров 
+        clearOInfo() //очистить информацию о заказе
 
  **3. export class Preview**
     Модель карточки товара, отображенной на превью.
@@ -181,74 +180,42 @@ yarn build
     Модель ассортимента товаров.
 
     Свойства:
-        products: IProduct[]; // Карточка товара
+        products: IProduct[] // Карточка товара
 
     Конструктор:
         constructor(protected events: IEvents)
 
     Методы:
         setProducts(products: IProduct[]) // Установить ассоритмент товара
-        getProducts(): IProduct[] //Получить ассортимент товара
-
- **5. export class SuccessOrder implements ISuccessOrder**
-    Информация об успешном заказе.
-
-    Свойства:
-        id: string; // Id заказа
-        total: number // Сумма заказа
-
-    Конструктор:
-        constructor()
-
-    Методы:
-        setId(id: string) // Установить id заказа
-        setTotal(total: number) // Установить сумму заказа
-        getId(): string // Получить id заказа
-        getTotal(): number // Получить сумму заказа
 
 ## VIEW
 
-**1. export class BasketCard extends Component<IProduct>**
-    Отображение карточки товара в корзине.
-
-    Свойства:
-        protected cardTitle: HTMLElement; // Заголовок
-        protected cardPrice: HTMLElement; // Цена
-
-    Конструктор:
-        constructor(protected events: IEvents)
-
-    Методы:
-        set title(value: string) // Установить заголовок
-        set price(value: string) // Установить цену
-
-**2. export class Card extends BasketCard**
+**1. export class Card extends BasketCard**
     Отображение карточки товара.
 
     Свойства:
-        protected cardImage: HTMLElement; // Картинка товара
-        protected cardCategory: HTMLElement; // Категория товара
+        protected basketButton?: HTMLButtonElement
+        protected cardImage: HTMLElement // Картинка товара
+        protected cardCategory: HTMLElement // Категория товара
+        protected cardTitle: HTMLElement // Заголовок
+        protected cardPrice: HTMLElement // Цена
+        protected cardText: HTMLElement // Описание товара
+        protected cardNumber?: HTMLElement //Порядковый номер карточки
 
     Конструктор:
-        constructor(container: HTMLElement)
+        constructor(container: HTMLElement, protected events: IEvents, action?: ICardAction)
 
     Методы:
         set category(value: string) // Установить категорию товара
-        set image(value: string) // Установить картинку товара    
+        set image(value: string) // Установить картинку товара
+        set title(value: string) // Установить заголовок
+        set price(value: string) // Установить цену   
+        set description(value: string) // Установить описание товара 
+        set button(value: string) //Установить текст на кнопке
+        set index(value: number) //Установить порядковый номер карточки
+        set action(action: ICardAction) //Установить обработчик на кнопку 
 
-**3. export class PreviewCard extends Card**
-    Отображение карточки товара на превью.
-
-    Свойства:
-        protected cardText: HTMLElement; // Описание товара
-
-    Конструктор:
-        constructor(container: HTMLElement)
-
-    Методы:
-        set description(value: string) // Установить описание товара
-
-**4. export class Basket extends Component<IBasketView>**
+**3. export class Basket extends Component<IBasketView>**
     Отображение корзины.
 
     Свойства:
@@ -264,7 +231,7 @@ yarn build
         set selected(items: string[]) // Установить выбранные товары
         set total(total: number) // Установить общую сумму товаров
 
-**5. export class Form<T> extends Component<IFormState>**
+**4. export class Form<T> extends Component<IFormState>**
     Отображение формы.
 
     Свойства:
@@ -279,9 +246,14 @@ yarn build
         set valid(value: boolean) // Установить состояние валидации формы
         set errors(value: string) // Установить ошибки формы
         render(state: Partial<T> & IFormState) // Перерисовать форму
+        clearForm() //Очистить форму
 
- **6. export class Contacts extends Form<IContactsForm>**
+ **5. export class Contacts extends Form<IContactsForm>**
     Отображение формы контактов пользователя.
+
+    Свойства:
+        protected _phone: HTMLInputElement // телефон пользователя
+        protected _email: HTMLInputElement // email пользователя
 
     Конструктор:
         constructor(container: HTMLFormElement, events: IEvents)
@@ -289,8 +261,9 @@ yarn build
     Методы:
         set phone(value: string) // Установить номер телефона пользователя
         set email(value: string) // Установить email пользователя
+        clearForm() // Очистить форму
 
- **7. export class Modal extends Component<IModalData>**
+ **6. export class Modal extends Component<IModalData>**
     Отображение модального окна.
 
     Свойства: 
@@ -307,12 +280,13 @@ yarn build
         close() // Закрыть модальное окно
         render(data: IModalData): HTMLElement // Перерисовать модальное окно
 
- **8. export class Order extends Form<IOrderForm>**
+ **7. export class Order extends Form<IOrderForm>**
     Отображение формы заказа.
 
     Свойства:
         protected card: HTMLButtonElement; // Чекбокс "оплата онлайн"
         protected cash: HTMLButtonElement; // Чекбокс "оплата при получении"
+        protected _address: HTMLInputElement; // Адрес пользователя
 
     Конструктор:
         constructor(container: HTMLElement, protected events: IEvents) 
@@ -320,14 +294,16 @@ yarn build
     Методы:
         set payment(value: Payment) // Установить способ оплаты
         set address(value: string) // Установить адрес пользователя
+        clearForm() // Очистить форму
 
- **9. export class Page extends Component<IPage>**
+ **8. export class Page extends Component<IPage>**
     Отображение страницы приложения.
 
     Свойства:
         protected _counter: HTMLElement // Счетчик товаров в корзине
         protected _catalog: HTMLElement // Каталог товаров
         protected _basket: HTMLElement // Кнопка открытия корзины
+        protected _wrapper: HTMLElement; //Элемент для управления фоном страницы
         
     Конструктор:
         constructor(container: HTMLElement, protected events: IEvents) 
@@ -335,8 +311,10 @@ yarn build
     Методы:
         set catalog(items: HTMLElement[]) // Установить каталог товаров
         set counter(value: number) // Установить счетчик товаров в корзине
+        set basket(items: HTMLElement[]) //Установить корзину товаров
+        set locked(value: boolean) // Установить блокировку фона
 
-  **10. export class Success extends Component<ISuccessOrder>**
+  **9. export class Success extends Component<ISuccessOrder>**
     Отображение страницы об успешном заказе.
 
     Свойства:
@@ -359,22 +337,21 @@ yarn build
 
 1. modal:open - открытие модального окна 
 2. modal:close - закрытие модального окна
-3. product:select - событие возникает при нажатии продуктовой карточки
-4. preview:open - открытие карточки товара
-5. order:open - событие возникает при нажатии кнопки "оформить" в корзине
-6. basket:open - открытие корзины
-7. order:submit - подтверждение формы информации по заказу
-8. contacts:submit - подтверждение формы контактов и создание заказа
+3. preview:open - открытие карточки товара
+4. order:open - событие возникает при нажатии кнопки "оформить" в корзине
+5. basket:open - открытие корзины
+6. order:submit - подтверждение формы информации по заказу
+7. contacts:submit - подтверждение формы контактов и создание заказа
+8. order.payment:change - изменение метода оплаты на форме "заказ"
+9. order.address:change - изменение адреса на форме "заказ"
+10. contacts.phone:change - изменение телефона на форме "контакты"
+10. contacts.email:change - изменение почты на форме "контакты"
 
 ### Сoбытия model
 
 1. productList:create - создание продуктового каталога;
 2. basket:addItem - добавление товара в корзину;
 3. basket:deleteItem - удаление товара из корзины;
-4. basket:clear - очищение корзины;
-5. order:create - успешное создание заказа;
-6. preview:set - установление карточки на превью;
-7. order:updated - изменение данных заказа;
 
 ## Сервисы
 
@@ -389,4 +366,4 @@ yarn build
 
     Методы:
         getProducts(): Promise<IProduct[]> // Получение ассортимента товаров
-        postOrder(order: IOrderInfo): Promise<ISuccessOrder> //создание заказа
+        postOrder(order: IOrder): Promise<ISuccessOrder> //создание заказа

@@ -9,20 +9,20 @@ export interface IProduct {
     price: number | null
 }
 
+export type Payment = 'online' | 'offline';
+
 export interface ISuccessOrder {
     id: string,
     total: number
 }
 
-export type Payment = 'online' | 'offline'
-
-export interface IOrderInfo {
-    payment: Payment,
-    email: string,
-    phone: string,
-    address: string,
-    total: number,
-    items: string[]
+export interface IOrder {
+    payment?: Payment,
+    email?: string,
+    phone?: string,
+    address?: string,
+    total?: number,
+    items?: string[]
 }
 
 export interface ISuccessActions {
@@ -58,4 +58,9 @@ export interface IPage {
 	counter: number;
 	catalog: HTMLElement[];
     locked: boolean;
+    basket: HTMLElement[];
+}
+
+export interface ICardAction {
+	onClick: () => void;
 }
