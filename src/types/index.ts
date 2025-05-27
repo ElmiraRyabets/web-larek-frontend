@@ -64,3 +64,5 @@ export interface IPage {
 export interface ICardAction {
 	onClick: () => void;
 }
+
+export type FormInfo = { isValid: boolean; error: string[] }

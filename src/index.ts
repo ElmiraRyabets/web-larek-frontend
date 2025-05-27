@@ -2,9 +2,9 @@ import './scss/styles.scss';
 import { ProductList } from './components/model/productList';
 import { Card } from './components/view/card';
 import { WebLarekApi } from './components/webLarekApi';
-import { IOrder, IProduct, ISuccessOrder, Payment } from './types';
+import { IOrder, IProduct, ISuccessOrder, Payment, FormInfo } from './types';
 import { API_URL, CDN_URL } from './utils/constants';
-import { cloneTemplate, createElement } from './utils/utils';
+import { cloneTemplate } from './utils/utils';
 import { EventEmitter } from './components/base/events';
 import { Preview } from './components/model/preview';
 import { Modal } from './components/view/modal';
@@ -119,7 +119,7 @@ function createViewBasketItems(): HTMLElement[] {
 			onClick: () => basket.deleteProduct(item),
 		});
 		card.index = i;
-		return createElement<HTMLElement>('li', {}, [card.render(item)]);
+		return card.render(item);
 	});
 	return items;
 }
@@ -166,27 +166,31 @@ events.on('order:open', () => {
 	modal.open();
 });
 
-function isOrderFormValid(): boolean {
-	let length = 0;
-	if (orderInfo.address != undefined && orderInfo.address != null) {
-		length = orderInfo.address.length;
+function isOrderFormValid(): FormInfo {
+	if (orderInfo.address.length == 0) {
+		const formInfo: FormInfo = {
+			isValid: false,
+			error: ['Не заполнено поле адрес'],
+		};
+		return formInfo;
+	} else {
+		const formInfo: FormInfo = {
+			isValid: true,
+			error: [],
+		};
+		return formInfo;
 	}
-	return (
-		orderInfo.address != undefined &&
-		orderInfo.address != null &&
-		length != 0 &&
-		orderInfo.payment != undefined
-	);
 }
 
 events.on(
 	'order.payment:change',
 	(info: { paymentMethod: keyof IOrder; value: Payment }) => {
 		orderInfo.setPayment(info.value);
+		let formInfo = isOrderFormValid();
 		modal.render({
 			content: orderForm.render({
-				valid: isOrderFormValid(),
-				errors: [],
+				valid: formInfo.isValid,
+				errors: formInfo.error,
 				payment: info.value,
 			}),
 		});
@@ -197,10 +201,11 @@ events.on(
 	'order.address:change',
 	(info: { address: keyof IOrder; value: string }) => {
 		orderInfo.setAddress(info.value);
+		let formInfo = isOrderFormValid();
 		modal.render({
 			content: orderForm.render({
-				valid: isOrderFormValid(),
-				errors: [],
+				valid: formInfo.isValid,
+				errors: formInfo.error,
 				address: info.value,
 			}),
 		});
@@ -217,33 +222,30 @@ events.on('order:submit', () => {
 	modal.open();
 });
 
-function isContactsFormValid(): boolean {
-	let phoneLength: number = 0;
-	let emailLength: number = 0;
-	if (orderInfo.phone != undefined && orderInfo.phone != null) {
-		phoneLength = orderInfo.phone.length;
-	}
-	if (orderInfo.email != undefined && orderInfo.email != null) {
-		emailLength = orderInfo.email.length;
-	}
-	return (
-		orderInfo.phone != undefined &&
-		orderInfo.phone != null &&
-		phoneLength != 0 &&
-		orderInfo.email != undefined &&
-		orderInfo.email != null &&
-		emailLength != 0
-	);
+function isContactsFormValid(): FormInfo {
+	let messages: string[] = [];
+	if (orderInfo.phone != undefined && orderInfo.phone.length == 0) {
+		messages.push('Не заполнено поле телефон')
+	} 
+	if (orderInfo.email != undefined && orderInfo.email.length == 0) {
+		messages.push('Не заполнено поле email')
+	} 
+	let formInfo: FormInfo = {
+		isValid: messages.length == 0 ? true : false,
+		error: messages,
+	};
+	return formInfo;
 }
 
 events.on(
 	'contacts.phone:change',
 	(info: { phone: keyof IOrder; value: string }) => {
 		orderInfo.setPhone(info.value);
+		let formInfo = isContactsFormValid();
 		modal.render({
 			content: contactsForm.render({
-				valid: isContactsFormValid(),
-				errors: [],
+				valid: formInfo.isValid,
+				errors: formInfo.error,
 				phone: info.value,
 			}),
 		});
@@ -254,10 +256,11 @@ events.on(
 	'contacts.email:change',
 	(info: { email: keyof IOrder; value: string }) => {
 		orderInfo.setEmail(info.value);
+		let formInfo = isContactsFormValid();
 		modal.render({
 			content: contactsForm.render({
-				valid: isContactsFormValid(),
-				errors: [],
+				valid: formInfo.isValid,
+				errors: formInfo.error,
 				email: info.value,
 			}),
 		});
