@@ -53,6 +53,8 @@ let basketView = new BasketView(cloneTemplate(basketPreviewTemplate), events);
 let orderForm = new Order(cloneTemplate(orderFormTemplate), events);
 let contactsForm = new Contacts(cloneTemplate(contactsFormTemplate), events);
 
+const emailRegexp = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+.[a-zA-Z0-9_-]+)/;
+
 events.onAll(({ eventName, data }) => {
 	console.log(eventName, data);
 });
@@ -166,8 +168,24 @@ events.on('order:open', () => {
 	modal.open();
 });
 
+/*function isOrderFormValid(): FormInfo {
+	if (orderInfo.address != undefined && orderInfo.address.length == 0) {
+		const formInfo: FormInfo = {
+			isValid: false,
+			error: ['Не заполнено поле адрес'],
+		};
+		return formInfo;
+	} else {
+		const formInfo: FormInfo = {
+			isValid: true,
+			error: [],
+		};
+		return formInfo;
+	}
+}*/
+
 function isOrderFormValid(): FormInfo {
-	if (orderInfo.address.length == 0) {
+	if (!orderInfo.address) {
 		const formInfo: FormInfo = {
 			isValid: false,
 			error: ['Не заполнено поле адрес'],
@@ -224,16 +242,20 @@ events.on('order:submit', () => {
 
 function isContactsFormValid(): FormInfo {
 	let messages: string[] = [];
-	if (orderInfo.phone != undefined && orderInfo.phone.length == 0) {
+	if (!orderInfo.phone) {
 		messages.push('Не заполнено поле телефон')
 	} 
-	if (orderInfo.email != undefined && orderInfo.email.length == 0) {
+	if (!orderInfo.email) {
 		messages.push('Не заполнено поле email')
-	} 
+		console.log('emailRegexp.test(orderInfo.email) ' + emailRegexp.test(orderInfo.email))
+	} else if (!emailRegexp.test(orderInfo.email)) {
+		messages.push('Некорректный формат поля email')
+	}
 	let formInfo: FormInfo = {
 		isValid: messages.length == 0 ? true : false,
 		error: messages,
 	};
+	console.log(messages)
 	return formInfo;
 }
 
